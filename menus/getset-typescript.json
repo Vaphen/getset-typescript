@@ -1,0 +1,26 @@
+{
+  "context-menu": {
+    "atom-text-editor": [
+      {
+        "label": "Generate Getters and Setters",
+        "command": "getset-typescript:generate"
+      }
+    ]
+  },
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "GetSet Typescript",
+          "submenu": [
+            {
+              "label": "Generate Getters and Setters",
+              "command": "getset-typescript:generate"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
