@@ -1,6 +1,6 @@
 'use babel';
 
-import GetsetTypescript from '../lib/getset-typescript';
+// import GetsetTypescript from '../lib/getset-typescript';
 
 // Use the command `window:run-package-specs` (cmd-alt-ctrl-p) to run specs.
 //
@@ -8,66 +8,153 @@ import GetsetTypescript from '../lib/getset-typescript';
 // or `fdescribe`). Remove the `f` to unfocus the block.
 
 describe('GetsetTypescript', () => {
-  let workspaceElement, activationPromise;
+  const utils = require('../lib/generatorUtils.js');
 
-  beforeEach(() => {
-    workspaceElement = atom.views.getView(atom.workspace);
-    activationPromise = atom.packages.activatePackage('getset-typescript');
-  });
+  describe('test type and variable name detection', () => {
 
-  describe('when the getset-typescript:toggle event is triggered', () => {
-    it('hides and shows the modal panel', () => {
-      // Before the activation event the view is not on the DOM, and no panel
-      // has been created
-      expect(workspaceElement.querySelector('.getset-typescript')).not.toExist();
+    it('should determine the correct variable name', () => {
+      const test1 = 'private _test1 = true;';
+      const test2 = 'private _test_2 = "hello";'
+      const test3 = 'private _longNameTest3: boolean;'
+      const test4 = 'private _hello_you_there: boolean = true;'
 
-      // This is an activation event, triggering it will cause the package to be
-      // activated.
-      atom.commands.dispatch(workspaceElement, 'getset-typescript:toggle');
-
-      waitsForPromise(() => {
-        return activationPromise;
-      });
-
-      runs(() => {
-        expect(workspaceElement.querySelector('.getset-typescript')).toExist();
-
-        let getsetTypescriptElement = workspaceElement.querySelector('.getset-typescript');
-        expect(getsetTypescriptElement).toExist();
-
-        let getsetTypescriptPanel = atom.workspace.panelForItem(getsetTypescriptElement);
-        expect(getsetTypescriptPanel.isVisible()).toBe(true);
-        atom.commands.dispatch(workspaceElement, 'getset-typescript:toggle');
-        expect(getsetTypescriptPanel.isVisible()).toBe(false);
-      });
+      expect(utils.extractVarName(test1)).toBe('test1');
+      expect(utils.extractVarName(test2)).toBe('test_2');
+      expect(utils.extractVarName(test3)).toBe('longNameTest3');
+      expect(utils.extractVarName(test4)).toBe('hello_you_there');
     });
 
-    it('hides and shows the view', () => {
-      // This test shows you an integration test testing at the view level.
+    it('should determine booleans correctly', () => {
+      const test1 = 'private _test1 = true;';
+      const test2 = 'private _test2 = false;'
+      const test3 = 'private _test3: boolean;'
+      const test4 = 'private _test4: boolean = true;'
+      const tests = [test1, test2, test3, test4];
 
-      // Attaching the workspaceElement to the DOM is required to allow the
-      // `toBeVisible()` matchers to work. Anything testing visibility or focus
-      // requires that the workspaceElement is on the DOM. Tests that attach the
-      // workspaceElement to the DOM are generally slower than those off DOM.
-      jasmine.attachToDOM(workspaceElement);
+      tests.forEach(test => expect(utils.extractType(test)).toBe('boolean'));
+    });
 
-      expect(workspaceElement.querySelector('.getset-typescript')).not.toExist();
+    it('should determine strings correctly', () => {
+      const test1 = 'private _test1 = "test";';
+      const test2 = 'private _test2 = \'test\';';
+      const test3 = 'private _test3 = `test`;';
+      const test4 = 'private _test4: string;';
+      const test5 = 'private _test5: string = "test";';
+      const tests = [test1, test2, test3, test4, test5];
 
-      // This is an activation event, triggering it causes the package to be
-      // activated.
-      atom.commands.dispatch(workspaceElement, 'getset-typescript:toggle');
+      tests.forEach(test => expect(utils.extractType(test)).toBe('string'));
+    });
 
-      waitsForPromise(() => {
-        return activationPromise;
-      });
+    it('should determine any correctly', () => {
+      const test1 = 'private _test1: any;';
+      const test2 = 'private _test2: any = true;';
+      const test3 = 'private _test3 = undefined;';
+      const test4 = 'private _test4 = null;';
+      const anyTests = [test1, test2, test3, test4];
 
-      runs(() => {
-        // Now we can test for view visibility
-        let getsetTypescriptElement = workspaceElement.querySelector('.getset-typescript');
-        expect(getsetTypescriptElement).toBeVisible();
-        atom.commands.dispatch(workspaceElement, 'getset-typescript:toggle');
-        expect(getsetTypescriptElement).not.toBeVisible();
-      });
+      const test5 = 'private _test5: undefined;';
+      const undefinedTests = [test5];
+
+
+      const test6 = 'private _test6: null;';
+      const nullTests = [test6];
+
+      anyTests.forEach(test => expect(utils.extractType(test)).toBe('any'));
+      undefinedTests.forEach(test => expect(utils.extractType(test)).toBe('undefined'));
+      nullTests.forEach(test => expect(utils.extractType(test)).toBe('null'));
+    });
+
+    it('should not determine anonymous objects', () => {
+      const test1 = "private _test1: {a: number, b: number};";
+      const test2 =
+`private _test2: {
+  a: number,
+  b: number
+};`;
+      const test3 = 'private _test3 = {a: 2, b: 3};';
+      const test4 =
+`private _test4 = {
+  a: 3,
+  b: 2
+};`;
+      const tests = [test1, test2, test3, test4];
+      tests.forEach(test => expect(utils.extractType(test)).toBe(''));
+    });
+
+    it('should determine symbols', () => {
+      const test1 = "private _test1: Symbol;";
+      const test2 = "private _test1 = Symbol();";
+      const test3 = "private _test1: Symbol = Symbol();";
+      const bigSymbolTests = [test1, test2, test3];
+
+      const test4 = "private _test1: symbol;";
+      const test5 = "private _test1 = symbol();";
+      const test6 = "private _test1: symbol = Symbol();";
+      const smallSymbolTests = [test4, test5, test6];
+
+      bigSymbolTests.forEach(test => expect(utils.extractType(test)).toBe('Symbol'));
+      smallSymbolTests.forEach(test => expect(utils.extractType(test)).toBe('symbol'));
+    });
+
+
+    it('should not determine lambda functions', () => {
+      const test1 = "private _test1: () => void;";
+      const test2 = "private _test2 = () => console.log('test');";
+      const test3 =
+`private _test3 = () => {
+  console.log("test");
+  return 2;
+};`;
+      const typedTests = [test1];
+      const withoutTypeTests = [test2, test3];
+      typedTests.forEach(test => expect(utils.extractType(test)).toBe('()=>void'));
+      withoutTypeTests.forEach(test => expect(utils.extractType(test)).toBe(''));
+    });
+
+    it('should not determine custom classes', () => {
+      const test1 = "private _test1: A;";
+      const test2 = "private _test2 = new A();";
+      const test3 = "private _test3:A = new A();";
+      // in case A is parent of B
+      const test4 = "private _test4:A = new B();";
+      const test5 = "private _test5:A = factory.createA();"
+      const tests = [test1, test2, test3, test4, test5];
+
+      tests.forEach(test => expect(utils.extractType(test)).toBe('A'));
+    });
+
+    it('should determine numbers', () => {
+      const test1 = "private _test1: number;";
+      const test2 = "private _test2 = 4;";
+      const test3 = "private _test3:number = 2.4;";
+      const test4 = "private _test4 = 321.87;";
+      const test5 = "private _test5 = 0x11;";
+      const test6 = "private _test6 = .123;";
+      const tests = [test1, test2, test3, test4, test5, test6];
+
+      tests.forEach(test => expect(utils.extractType(test)).toBe('number'));
+    });
+
+    it('should determine union types', () => {
+      const test1 = "private _test1: number | string;"
+      const test2 = "private _test2: number | string = 5;"
+      const test3 = "private _test3: number | Subject<boolean> | boolean;"
+
+      expect(utils.extractType(test1)).toBe('number|string');
+      expect(utils.extractType(test2)).toBe('number|string');
+      expect(utils.extractType(test3)).toBe('number|Subject<boolean>|boolean');
+    });
+
+    it('should ignore assignments by functions or similar things', () => {
+      const test1 = "private _test1 = factory.getSomeClass();"
+      const test2 = "private _test2 = MyClass.Instance;"
+      const test3 = "private _test3 = this;"
+      // don't fool it by having 'new' or 'symbol' keyword in name
+      const test4 = "private _test4 = newThingy();"
+      const test5 = "private _test5 = symbolFunction();"
+      const tests = [test1, test2, test3, test4, test5];
+
+      tests.forEach(test => expect(utils.extractType(test)).toBe(''));
     });
   });
 });
