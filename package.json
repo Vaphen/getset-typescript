@@ -1,7 +1,7 @@
 {
   "name": "getset-typescript",
   "main": "./lib/getset-typescript",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "description": "Generate Getters and Setters of private typescript members automatically.",
   "keywords": [],
   "activationCommands": {
