@@ -6,7 +6,7 @@ Generate getters and setters of private typescript members automatically.
 
 ## Usage
 **Select all member variables** you want to generate getters and setters for.
-Simply press **Cmd+Alt+g** to generate the getters and setters for the selected variables below the selection.
+Simply press **Cmd+Alt+g** (or rightclick and select "*Generate Getters and Setters*") to generate the getters and setters for the selected variables below the selection.
 **IMPORTANT: only private members starting with your private prefix will be considered (default prefix '_')**
 
 ## Configuration
