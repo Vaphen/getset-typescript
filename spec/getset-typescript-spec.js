@@ -12,16 +12,30 @@ describe('GetsetTypescript', () => {
 
   describe('test type and variable name detection', () => {
 
-    it('should determine the correct variable name', () => {
+    it('should determine the correct variable name or return undefined', () => {
       const test1 = 'private _test1 = true;';
       const test2 = 'private _test_2 = "hello";'
       const test3 = 'private _longNameTest3: boolean;'
       const test4 = 'private _hello_you_there: boolean = true;'
+      const test5 = 'private _test() { console.log("holla"); }'
+      const test6 = 'private _test2: () => void;'
+      const test7 = 'private _test3 = () => console.log("hey");'
+      const test8 = 'private _test4(sometest: () => void) { console.log("holla"); }'
+      const test9 = 'public _test5: number;'
 
-      expect(utils.extractVarName(test1)).toBe('test1');
-      expect(utils.extractVarName(test2)).toBe('test_2');
-      expect(utils.extractVarName(test3)).toBe('longNameTest3');
-      expect(utils.extractVarName(test4)).toBe('hello_you_there');
+      expect(utils.extractVarName(test1, '_')).toBe('test1');
+      expect(utils.extractVarName(test2, '_')).toBe('test_2');
+      expect(utils.extractVarName(test3, '_')).toBe('longNameTest3');
+      expect(utils.extractVarName(test4, '_')).toBe('hello_you_there');
+      expect(utils.extractVarName(test5, '_')).toBe(undefined);
+      expect(utils.extractVarName(test6, '_')).toBe('test2');
+      expect(utils.extractVarName(test7, '_')).toBe('test3');
+      expect(utils.extractVarName(test8, '_')).toBe(undefined);
+      // determine variable name for all modifiers (private, prot., pub.)
+      expect(utils.extractVarName(test9, '_')).toBe('test5');
+
+      // wrong prefix
+      expect(utils.extractVarName(test1, 'priv_')).toBe(undefined);
     });
 
     it('should determine booleans correctly', () => {
