@@ -9,3 +9,6 @@
 * won't generate getter or setter now if already existent
 * added configuration for private variable prefix
 * changed setter variable name (removed new prefix)
+## 1.0.4 - Compatibility with atom-beautify
+* if beautify is installed, run beautify after insertion
+* only indent created getters and setters, not whole document.
