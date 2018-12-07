@@ -92,7 +92,7 @@ describe('GetsetTypescript', () => {
   b: 2
 };`;
       const tests = [test1, test2, test3, test4];
-      tests.forEach(test => expect(utils.extractType(test)).toBe(''));
+      tests.forEach(test => expect(utils.extractType(test)).toBe('any'));
     });
 
     it('should determine symbols', () => {
@@ -122,7 +122,7 @@ describe('GetsetTypescript', () => {
       const typedTests = [test1];
       const withoutTypeTests = [test2, test3];
       typedTests.forEach(test => expect(utils.extractType(test)).toBe('()=>void'));
-      withoutTypeTests.forEach(test => expect(utils.extractType(test)).toBe(''));
+      withoutTypeTests.forEach(test => expect(utils.extractType(test)).toBe('any'));
     });
 
     it('should not determine custom classes', () => {
@@ -168,7 +168,7 @@ describe('GetsetTypescript', () => {
       const test5 = "private _test5 = symbolFunction();"
       const tests = [test1, test2, test3, test4, test5];
 
-      tests.forEach(test => expect(utils.extractType(test)).toBe(''));
+      tests.forEach(test => expect(utils.extractType(test)).toBe('any'));
     });
   });
 });
