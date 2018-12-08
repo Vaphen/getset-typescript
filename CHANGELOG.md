@@ -12,3 +12,7 @@
 ## 1.0.4 - Compatibility with atom-beautify
 * if beautify is installed, run beautify after insertion
 * only indent created getters and setters, not whole document.
+## 1.0.5 - RegExp is also a type
+* added RegExp type
+* fixed a bug regarding nested lambda expressions
+* refactored code for a better future codebase

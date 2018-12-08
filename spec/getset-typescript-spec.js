@@ -21,7 +21,6 @@ describe('GetsetTypescript', () => {
       const test6 = 'private _test2: () => void;'
       const test7 = 'private _test3 = () => console.log("hey");'
       const test8 = 'private _test4(sometest: () => void) { console.log("holla"); }'
-      const test9 = 'public _test5: number;'
 
       expect(utils.extractVarName(test1, '_')).toBe('test1');
       expect(utils.extractVarName(test2, '_')).toBe('test_2');
@@ -31,8 +30,6 @@ describe('GetsetTypescript', () => {
       expect(utils.extractVarName(test6, '_')).toBe('test2');
       expect(utils.extractVarName(test7, '_')).toBe('test3');
       expect(utils.extractVarName(test8, '_')).toBe(undefined);
-      // determine variable name for all modifiers (private, prot., pub.)
-      expect(utils.extractVarName(test9, '_')).toBe('test5');
 
       // wrong prefix
       expect(utils.extractVarName(test1, 'priv_')).toBe(undefined);
@@ -157,6 +154,17 @@ describe('GetsetTypescript', () => {
       expect(utils.extractType(test1)).toBe('number|string');
       expect(utils.extractType(test2)).toBe('number|string');
       expect(utils.extractType(test3)).toBe('number|Subject<boolean>|boolean');
+    });
+
+    it('should determine regex types', () => {
+      const test1 = "private _test1 = /.*/"
+      const test2 = "private _test2 = new RegExp('/.*/');"
+      const test3 = "private _test3: RegExp = /.*[^a]*/;"
+      const test4 = "private _test4: RegExp;"
+
+      const tests = [test1, test2, test3, test4];
+
+      tests.forEach(test => expect(utils.extractType(test)).toBe('RegExp'));
     });
 
     it('should ignore assignments by functions or similar things', () => {
